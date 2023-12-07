@@ -1,10 +1,17 @@
 package GUI;
 
+import PatientManagement.Clinic.Clinic;
+import PatientManagement.Clinic.PatientDirectory;
+import PatientManagement.Patient.Encounters.SickPatientReport;
+
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class DiseaseChange extends JFrame {
     JLabel title, nameText;
@@ -13,7 +20,7 @@ public class DiseaseChange extends JFrame {
     JTable table;
     DefaultTableModel tableModel;
 
-    public DiseaseChange(){
+    public DiseaseChange(Clinic c){
         setTitle("View Local Services by Site");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
@@ -29,6 +36,48 @@ public class DiseaseChange extends JFrame {
 
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
+        PatientDirectory pd = c.getPatientDirectory();
+        SickPatientReport stpatientReport = pd.generateSickPatientReport();
+        stpatientReport.generateSickPatientData();
+
+        DefaultTableModel tableM = getTableModel();
+        tableM.setRowCount(0);
+
+        for (int i = 0; i < stpatientReport.getSickName().size(); i++) {
+            Object[] newRowL = {stpatientReport.getSickName().get(i),stpatientReport.getSickNumber().get(i),stpatientReport.getSickAddress().get(i)};
+            tableM.addRow(newRowL);
+        }
+        searchBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!getNameInput().equals("")){
+                    tableM.setRowCount(0);
+                    for (int i = 0; i < stpatientReport.getSickName().size(); i++){
+                        if (getNameInput().equals(stpatientReport.getSickName().get(i))){
+                            Object[] newRowR = {stpatientReport.getSickName().get(i),stpatientReport.getSickNumber().get(i),stpatientReport.getSickAddress().get(i)};
+                            tableM.addRow(newRowR);
+                        }
+                    }
+                } else {
+                    tableM.setRowCount(0);
+                    for (int i = 0; i < stpatientReport.getSickName().size(); i++){
+                        Object[] newRowR = {stpatientReport.getSickName().get(i),stpatientReport.getSickNumber().get(i),stpatientReport.getSickAddress().get(i)};
+                        tableM.addRow(newRowR);
+                    }
+                }
+            }
+        });
+
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Home home = new Home(c);
+                dispose();
+            }
+        });
+
     }
 
     private void setTitlePanel(){
@@ -72,9 +121,30 @@ public class DiseaseChange extends JFrame {
 
 
         table = new JTable(tableModel);
-        table.setPreferredScrollableViewportSize(new Dimension(500, 200));
 
-        jp.add(new JScrollPane(table), BorderLayout.CENTER); // Wrap the table in a JScrollPane to enable scrolling
+        table.getColumnModel().getColumn(2).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (c instanceof JLabel) {
+                    JLabel label = (JLabel) c;
+                    int preferredWidth = label.getPreferredSize().width;
+                    TableColumn colum = table.getColumnModel().getColumn(2);
+                    colum.setPreferredWidth(Math.max(colum.getPreferredWidth(), preferredWidth));
+                }
+                return c;
+            }
+        });
+
+        table.setPreferredScrollableViewportSize(new Dimension(500, 200));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        jp.add(scrollPane, BorderLayout.CENTER); // Wrap the table in a JScrollPane to enable scrolling
+
 
         getContentPane().add(jp);
     }
@@ -92,12 +162,7 @@ public class DiseaseChange extends JFrame {
 
         jp.add(backBtn);
 
-        backBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                switchToHome();
-            }
-        });
+
 
         getContentPane().add(jp);
     }
@@ -114,9 +179,5 @@ public class DiseaseChange extends JFrame {
         return nameInput.getText();
     }
 
-    private void switchToHome() {
-        Home home = new Home();
-        home.setVisible(true);
-        dispose(); // Close the current frame
-    }
+
 }

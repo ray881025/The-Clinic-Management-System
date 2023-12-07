@@ -1,16 +1,28 @@
 package GUI;
 
+import PatientManagement.Clinic.*;
+import PatientManagement.Clinic.Event;
+import PatientManagement.Patient.ClinicalHistory.Alergy;
+import PatientManagement.Patient.ClinicalHistory.Vaccination;
+import PatientManagement.Patient.Encounters.Encounter;
+import PatientManagement.Patient.Encounters.EncounterHistory;
+import PatientManagement.Patient.Patient;
+import PatientManagement.Persona.PersonDirectory;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class ViewPatient extends JFrame {
     JLabel title, name, age, allergy, vaccination, lastDate, lastLocation;
     JTextField searchInput, nameInput, ageInput, allergyInput, vaccinationInput, dateInput, locationInput;
     JButton searchBtn, contBtn, backBtn;
 
-    public ViewPatient(){
+    public ViewPatient(Clinic c){
         setTitle("View Patient");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
@@ -26,6 +38,85 @@ public class ViewPatient extends JFrame {
 
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Logic For Search Button here
+        //Only if patient was found then we can continue
+        PatientDirectory patDirectory = c.getPatientDirectory();
+        PersonDirectory perDirectory = c.getPersonDirectory();
+        searchBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String vp_patientName = getSearchInput();
+                Patient vp_per = patDirectory.findPatient(vp_patientName);
+
+
+                if (vp_per != null) {
+                    int ind = vp_per.getEncounters().size();
+
+                    PatientManagement.Clinic.Event lastseen = vp_per.getEncounters().get(ind-1).getEvent();
+
+
+                    ArrayList<Alergy> al = vp_per.getAlergyhistory().getAlergies();
+                    ArrayList<Vaccination> v = vp_per.getVachistory().getVaccinations();
+                    String name = vp_per.getPerson().getPersonId();
+                    int age = vp_per.getPerson().getAge();
+
+                    getNameInput().setText(name);
+                    getAgeInput().setText(String.valueOf(age));
+
+                    if (al.size() != 0) {
+                        getAllergyInput().setText(al.get(0).getName());
+                    } else {
+                        getAllergyInput().setText("N / A");
+                    }
+
+                    if (v.size() != 0) {
+                        getVaccinationInput().setText(v.get(0).getName());
+                    } else {
+                        getVaccinationInput().setText("N / A");
+                    }
+
+                    getDateInput().setText(lastseen.getDate());
+                    getLocationInput().setText(lastseen.getSite().getName());
+
+                    System.out.println(vp_per.getPerson().getPersonId());
+
+
+                    //if not find person then set N / A
+                } else {
+                    getNameInput().setText("N / A");
+                    getAgeInput().setText("N / A");
+                    getAllergyInput().setText("N / A");
+                    getVaccinationInput().setText("N / A");
+                    getDateInput().setText("N / A");
+                    getLocationInput().setText("N / A");
+                }
+            }
+        });
+
+        contBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String vp_patientName = getSearchInput();
+                Patient vp_per = patDirectory.findPatient(vp_patientName);
+                //Logic For continue Button here
+                if (vp_per != null){
+                    dispose();
+                    DiseaseType dst = new DiseaseType(vp_per, c);
+                } else {
+                    JOptionPane.showMessageDialog(null,"Please use an existing patient and then continue","Error",JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
+
+        //Logic For Back Button Here
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                Home home = new Home(c);
+            }
+        });
     }
 
     private void setSearchPanel(){
@@ -117,27 +208,14 @@ public class ViewPatient extends JFrame {
 
 
 
-        backBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                switchToHome();
-            }
-        });
+
 
         getContentPane().add(jp);
     }
 
-    private void switchToHome() {
-        Home home = new Home();
-        home.setVisible(true);
-        dispose(); // Close the current frame
-    }
 
-    public void switchToDiseaseType(){
-        DiseaseType type = new DiseaseType();
-        type.setVisible(true);
-        dispose();
-    }
+
+
     public String getSearchInput() {
         return searchInput.getText();
     }

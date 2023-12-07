@@ -12,7 +12,7 @@ public class Home extends JFrame {
     JButton logoutBtn, patientCreate, patientView, patientHistory, diseaseChange,
             diseaseLocation, serviceLocation;
 
-    public Home(){
+    public Home(Clinic c){
         setTitle("Home Page");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
@@ -27,6 +27,63 @@ public class Home extends JFrame {
 
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Logic For Logout Button Here
+        logoutBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                LoginGUI lgu = new LoginGUI(c);
+            }
+        });
+
+        //Logic For PatientCreate
+        patientCreate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                CreatePatient crp = new CreatePatient(c);
+            }
+        });
+
+        //Logic For ViewPatient
+        patientView.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                ViewPatient vp = new ViewPatient(c);
+            }
+        });
+
+        //Logic For DiseaseChange
+        diseaseChange.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                DiseaseChange dsg = new DiseaseChange(c);
+            }
+        });
+
+        //Logic For ViewSickPatient
+        diseaseLocation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                ViewSickPatient vsp = new ViewSickPatient(c);
+            }
+        });
+
+        //Logic For LocalService
+        serviceLocation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                ViewLocationService vls = new ViewLocationService(c);
+            }
+        });
+
+
+
     }
 
     private void setBasicPanel(){
@@ -68,7 +125,7 @@ public class Home extends JFrame {
 
         jp.add(patientCreate);
         jp.add(patientView);
-        jp.add(patientHistory);
+
 
         getContentPane().add(jp);
     }
@@ -155,36 +212,14 @@ public class Home extends JFrame {
         return diseaseLocation;
     }
 
-    //It will go back to Login page when you click Logout button
-    private void switchToLogin() {
-        LoginGUI loginGUI = new LoginGUI();
-        loginGUI.setVisible(true);
-        dispose();// Close the current frame
-    }
 
-    private void switchToCreate(){
-        CreatePatient create = new CreatePatient();
-        create.setVisible(true);
-        dispose();
-    }
+
+
 
     //It will go back to View page when you click View Patient button
-    public void switchToView(){
-        ViewPatient view = new ViewPatient();
-        view.setVisible(true);
-        dispose();// Close the current frame
 
-    }
 
-    private void switchToChange(){
-        DiseaseChange history = new DiseaseChange();
-        history.setVisible(true);
-        dispose();
-    }
 
-    private void switchToSick(){
-        ViewSickPatient sick = new ViewSickPatient();
-        sick.setVisible(true);
-        dispose();
-    }
+
+
 }

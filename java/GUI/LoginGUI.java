@@ -1,6 +1,8 @@
 package GUI;
 
 import GUI.Home;
+import PatientManagement.Clinic.Clinic;
+import PatientManagement.Clinic.LoginDirectory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +14,7 @@ public class LoginGUI extends JFrame {
     JTextField usernameInput, passwordInput;
     JButton loginBtn;
 
-    public  LoginGUI(){
+    public  LoginGUI(Clinic c){
         setTitle("Login In");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
@@ -22,11 +24,30 @@ public class LoginGUI extends JFrame {
         setTitlePanel();
         add(Box.createVerticalStrut(20)); //add 30 pixels gap
         setInputPanel();
+
+
         add(Box.createVerticalStrut(40)); //add 40 pixels gap
         setBtnPanel();
 
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Logic For Login Button Here
+        LoginDirectory lgd = c.getLgd();
+        loginBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String userName = getUsername();
+                String passWord = getPassword();
+                if(lgd.findLoginInformation( userName, passWord)){
+                    dispose();
+                    Home h = new Home(c);
+                } else {
+                    JOptionPane.showMessageDialog(null,"Wrong Information Please input correct username and password","Error",JOptionPane.INFORMATION_MESSAGE);
+                };
+            }
+        });
+
     }
 
     private  void  setTitlePanel(){
@@ -82,11 +103,6 @@ public class LoginGUI extends JFrame {
     }
 
     //It will go to Home page when you enter the correct username and password
-    public void switchToHome() {
-        Home home = new Home();
-        home.setVisible(true);
-        dispose(); // Close the current frame
-    }
 
     public JButton getLoginBtn() {
         return loginBtn;

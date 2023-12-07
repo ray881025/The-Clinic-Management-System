@@ -1,5 +1,8 @@
 package GUI;
 
+import PatientManagement.Clinic.Clinic;
+import PatientManagement.Clinic.LocationList;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -16,7 +19,7 @@ public class ViewLocationService extends JFrame {
 
     DefaultTableModel tableModel;
 
-    public ViewLocationService(){
+    public ViewLocationService(Clinic c){
         setTitle("View Location Service by Site");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
@@ -32,6 +35,48 @@ public class ViewLocationService extends JFrame {
 
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
+        //The initial text
+        LocationList lcl = c.getLocationList();
+        lcl.generatelocationServiceReport();
+
+        DefaultTableModel tableX = getTableModel();
+        tableX.setRowCount(0);
+        for (int i = 0; i < lcl.getLocationName().size(); i++) {
+            Object[] newRowL = {lcl.getLocalServiceName().get(i),lcl.getLocalServiceTelphone().get(i),lcl.getLocalServiceAddress().get(i)};
+            tableX.addRow(newRowL);
+        }
+
+        //Search Bar Logic
+        searchBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!getLocationDropdown().equals("")){
+                    tableX.setRowCount(0);
+                    for (int i = 0; i < lcl.getLocationName().size(); i++) {
+                        if (lcl.getLocationName().get(i).equals(getLocationDropdown())){
+                            Object[] newRowL = {lcl.getLocalServiceName().get(i),lcl.getLocalServiceTelphone().get(i),lcl.getLocalServiceAddress().get(i)};
+                            tableX.addRow(newRowL);
+                        }
+                    }
+                } else {
+                    tableX.setRowCount(0);
+                    for (int i = 0; i < lcl.getLocationName().size(); i++) {
+                        Object[] newRowL = {lcl.getLocalServiceName().get(i),lcl.getLocalServiceTelphone().get(i),lcl.getLocalServiceAddress().get(i)};
+                        tableX.addRow(newRowL);
+                    }
+                }
+            }
+        });
+
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Home home = new Home(c);
+                dispose();
+            }
+        });
     }
 
     private void setTitlePanel(){
@@ -60,9 +105,9 @@ public class ViewLocationService extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String selected = (String)locationDropdown.getSelectedItem();
                 if("Malden".equals(selected)){
-                    siteOption = new String[]{"160 Pleasant", "150 Exchange", "240 Kyle", "360 Ops1", "420 Quil"};
+                    siteOption = new String[]{"160 Pleasant", "150 Exchange", "240 Kyle", "360 Opsl", "420 Quil"};
                 }else if("Allston".equals(selected)){
-                    siteOption = new String[]{"122 kkILLl", "33322 sdwds", "2211 dws"};
+                    siteOption = new String[]{"122 kkllll", "33322 sdwds", "2211 dws"};
                 }else if("Cambridge".equals(selected)){
                     siteOption = new String[]{"133 Oxford St.", "288 Cambridge St.", "888 Oxford St."};
                 }else {
@@ -120,21 +165,12 @@ public class ViewLocationService extends JFrame {
 
         jp.add(backBtn);
 
-        backBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                switchToHome();
-            }
-        });
+
 
         getContentPane().add(jp);
     }
 
-    private void switchToHome() {
-        Home home = new Home();
-        home.setVisible(true);
-        dispose(); // Close the current frame
-    }
+
 
     public DefaultTableModel getTableModel() {
         return tableModel;

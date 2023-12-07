@@ -1,11 +1,19 @@
 package GUI;
 
 import GUI.ViewPatient;
+import PatientManagement.Clinic.*;
+import PatientManagement.Clinic.Event;
+import PatientManagement.Patient.Encounters.Encounter;
+import PatientManagement.Patient.Encounters.EncounterHistory;
+import PatientManagement.Patient.Patient;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class DiseaseType extends JFrame {
     JLabel title, name, previousType, diseaseType, location, site;
@@ -16,7 +24,7 @@ public class DiseaseType extends JFrame {
             ,locationOption = {"", "Malden", "Allston", "Cambridge"}
             ,siteOption = {""};
 
-    public DiseaseType(){
+    public DiseaseType(Patient vp_per, Clinic c){
         setTitle("Disease Type");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
@@ -31,6 +39,76 @@ public class DiseaseType extends JFrame {
 
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Logic For set the intial text
+        getNameInput().setText(vp_per.getPerson().getPersonId());
+        ArrayList<String> diaList = vp_per.getConfirmedDiseaseType();
+
+        //Combine the disease
+        StringBuilder combinedString = new StringBuilder();
+        for (String str : diaList) {
+            combinedString.append(str+" ");
+        }
+        String result = combinedString.toString();
+        getPreviousInput().setText(result);
+
+        getAddBtn().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Set the current time
+                SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
+                Date date1 = new Date(System.currentTimeMillis());
+                String currentdate1 = simpleDateFormat1.format(date1);
+
+                //get people last event
+                int ind = vp_per.getEncounters().size();
+                PatientManagement.Clinic.Event lastseen = vp_per.getEncounters().get(ind-1).getEvent();
+
+                if (lastseen.getDate().equals(currentdate1)) {
+                    //if the patient is first seen then get last encounter and then get its diseasetype
+                    String diseaseType = getDiseaseDropdown();
+                    if (diseaseType.equals("HIV")||diseaseType.equals("Abola")) {
+                        vp_per.getEncounters().get(0).newDiagnosis(diseaseType,true);
+                        JOptionPane.showMessageDialog(null,"Warning! This Patient should be doing following medical tests","Success",JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        vp_per.getEncounters().get(0).newDiagnosis(diseaseType,false);
+                        JOptionPane.showMessageDialog(null,"This Patient is healthy","Success",JOptionPane.INFORMATION_MESSAGE);
+                    }
+
+                } else {
+                    //Input location
+                    String diseaseType = getDiseaseDropdown();
+                    Location loc2 = new Location(null);
+                    Site sit2 = new Site(null);
+                    LocationList locationList2 = c.getLocationList();
+                    loc2 = locationList2.findLocation(getLocationDropdown());
+                    SiteCatalog stc2 = loc2.getSiteCatalog();
+                    sit2 = stc2.findSite(getSiteDropdown());
+
+
+                    EncounterHistory encounterHistory = c.getEncounterHistory();
+                    Encounter fixedEncounter1 = encounterHistory.newEncounter(vp_per);
+
+                    if (diseaseType.equals("HIV")||diseaseType.equals("Abola")) {
+                        fixedEncounter1.newDiagnosis(diseaseType,true);
+                        JOptionPane.showMessageDialog(null,"Warning! This Patient should be doing following medical tests!","Success",JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        fixedEncounter1.newDiagnosis(diseaseType,false);
+                        JOptionPane.showMessageDialog(null,"This Patient is healthy!","Success",JOptionPane.INFORMATION_MESSAGE);
+                    }
+                    Event ev = fixedEncounter1.newEvent(sit2,currentdate1);
+                }
+
+            }
+        });
+
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                Home h = new Home(c);
+            }
+        });
 
     }
 
@@ -71,9 +149,9 @@ public class DiseaseType extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String selected = (String)locationDropdown.getSelectedItem();
                 if("Malden".equals(selected)){
-                    siteOption = new String[]{"160 Pleasant", "150 Exchange", "240 Kyle", "360 Ops1", "420 Quil"};
+                    siteOption = new String[]{"160 Pleasant", "150 Exchange", "240 Kyle", "360 Opsl", "420 Quil"};
                 }else if("Allston".equals(selected)){
-                    siteOption = new String[]{"122 kkILLl", "33322 sdwds", "2211 dws"};
+                    siteOption = new String[]{"122 kkllll", "33322 sdwds", "2211 dws"};
                 }else if("Cambridge".equals(selected)){
                     siteOption = new String[]{"133 Oxford St.", "288 Cambridge St.", "888 Oxford St."};
                 }else {
@@ -115,7 +193,7 @@ public class DiseaseType extends JFrame {
         addBtn.setOpaque(true); //Set transparency for button
         addBtn.setBorderPainted(false);
 
-        backBtn = new JButton("Go Back");
+        backBtn = new JButton("Go Home");
         backBtn.setForeground(Color.white);
         backBtn.setBackground(Color.black);
         backBtn.setOpaque(true); //Set transparency for button
@@ -124,12 +202,7 @@ public class DiseaseType extends JFrame {
         jp.add(backBtn);
         jp.add(addBtn);
 
-        backBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                switchToViewPatient();
-            }
-        });
+
 
         getContentPane().add(jp);
     }
@@ -158,9 +231,5 @@ public class DiseaseType extends JFrame {
         return (String)siteDropdown.getSelectedItem();
     }
 
-    private void switchToViewPatient(){
-        ViewPatient view = new ViewPatient();
-        view.setVisible(true);
-        dispose();
-    }
+
 }

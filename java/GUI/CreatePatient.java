@@ -1,22 +1,32 @@
 package GUI;
 
 
+import PatientManagement.Clinic.*;
+import PatientManagement.Clinic.Event;
+import PatientManagement.Patient.Encounters.Encounter;
+import PatientManagement.Patient.Encounters.EncounterHistory;
+import PatientManagement.Patient.Patient;
+import PatientManagement.Persona.Person;
+import PatientManagement.Persona.PersonDirectory;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class CreatePatient extends JFrame{
     JTextField fullnameInput, ageInput;
     JComboBox<String> allergyDropdown, vaccinationDropdown, locationDropdown, siteDropdown ;
     JButton addBtn, backBtn;
     JLabel title, fullname, allergy, vaccination, age, location, site;
-    String[] allergyOption = {"", "HIV", "Abola", "Stomachache", "Fever"}
+    String[] allergyOption = {"", "Food allergies","Seasonal allergies","Drug allergies","N/A"}
             ,vaccinationOption = {"", "BNT", "AZ", "Moderna"}
             ,locationOption = {"", "Malden", "Allston", "Cambridge"}
             ,siteOption = {""};
 
-    public CreatePatient() {
+    public CreatePatient(Clinic c) {
         setTitle("Create New Patient");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
@@ -31,6 +41,59 @@ public class CreatePatient extends JFrame{
 
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Logic For PatientCreate
+        addBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String newpatientName = getFullnameInput();
+                int newpatientAge = getAgeInput();
+                PatientDirectory patDirectory = c.getPatientDirectory();
+                PersonDirectory perDirectory = c.getPersonDirectory();
+
+                //Input Persons Name and Age
+                Person newPers = perDirectory.newPerson(newpatientName,newpatientAge);
+                Patient crp_per = patDirectory.newPatient(newPers);
+
+                //Input vaccination and allergy
+                crp_per.newAlergy(getAllergyDropdown());
+                crp_per.newVaccination(getVaccinationDropdown());
+
+                //Input Date automatically
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                Date date = new Date(System.currentTimeMillis());
+                String currentdate = simpleDateFormat.format(date);
+
+
+
+                //Input Location and site
+                boolean findSite = false;
+                Location loc = new Location(null);
+                Site sit = new Site(null);
+                LocationList locationList = c.getLocationList();
+                loc = locationList.findLocation(getLocationDropdown());
+                SiteCatalog stc = loc.getSiteCatalog();
+                sit = stc.findSite(getSiteDropdown());
+
+
+
+
+                //Input event
+                EncounterHistory encounterHistory = c.getEncounterHistory();
+                Encounter fixedEncounter1 = encounterHistory.newEncounter(crp_per);
+                Event ev = fixedEncounter1.newEvent(sit,currentdate);
+
+                JOptionPane.showMessageDialog(null,"Congratulations! Add Successfully!","Success",JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                Home h = new Home(c);
+            }
+        });
     }
 
     private  void  setTitlePanel(){
@@ -70,9 +133,9 @@ public class CreatePatient extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 String selected = (String)locationDropdown.getSelectedItem();
                 if("Malden".equals(selected)){
-                    siteOption = new String[]{"160 Pleasant", "150 Exchange", "240 Kyle", "360 Ops1", "420 Quil"};
+                    siteOption = new String[]{"160 Pleasant", "150 Exchange", "240 Kyle", "360 Opsl", "420 Quil"};
                 }else if("Allston".equals(selected)){
-                    siteOption = new String[]{"122 kkILLl", "33322 sdwds", "2211 dws"};
+                    siteOption = new String[]{"122 kkllll", "33322 sdwds", "2211 dws"};
                 }else if("Cambridge".equals(selected)){
                     siteOption = new String[]{"133 Oxford St.", "288 Cambridge St.", "888 Oxford St."};
                 }else {
@@ -130,11 +193,7 @@ public class CreatePatient extends JFrame{
         getContentPane().add(jp);
     }
 
-    private void switchToHome() {
-        Home home = new Home();
-        home.setVisible(true);
-        dispose(); // Close the current frame
-    }
+
 
     public JButton getAddBtn() {
         return addBtn;
