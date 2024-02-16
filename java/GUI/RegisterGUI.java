@@ -1,6 +1,5 @@
 package GUI;
 
-import GUI.Home;
 import PatientManagement.Clinic.Clinic;
 import PatientManagement.Clinic.LoginDirectory;
 
@@ -9,13 +8,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class LoginGUI extends JFrame {
-    JLabel title, username, password;
-    JTextField usernameInput, passwordInput;
-    JButton loginBtn, addBtn;
+public class RegisterGUI extends JFrame{
+    JLabel title, username, password, confirmpassword;
+    JTextField usernameInput, passwordInput, confirmpasswordInput;
+    JButton registerBtn, backBtn;
 
-    public  LoginGUI(Clinic c){
-        setTitle("Login In");
+    public  RegisterGUI(Clinic c){
+        setTitle("Register");
         setSize(600, 400);
         setLocationRelativeTo(null); //Center the JFrame on the screen
         setLayout(new BoxLayout(getContentPane(),BoxLayout.Y_AXIS));
@@ -34,25 +33,29 @@ public class LoginGUI extends JFrame {
 
         //Logic For Login Button Here
         LoginDirectory lgd = c.getLgd();
-        loginBtn.addActionListener(new ActionListener() {
+        registerBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String userName = getUsername();
                 String passWord = getPassword();
-                if(lgd.findLoginInformation( userName, passWord)){
-                    dispose();
-                    Home h = new Home(c);
+                String getconfirmPassword = getConfirmpassword();
+                System.out.println(getconfirmPassword);
+                System.out.println(passWord);
+                if (passWord.equals(getconfirmPassword)) {
+                    lgd.newLoginUser(userName,passWord);
+                    JOptionPane.showMessageDialog(null,"You have registered successfully.","Success",JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(null,"Wrong Information Please input correct username and password","Error",JOptionPane.INFORMATION_MESSAGE);
-                };
+                    JOptionPane.showMessageDialog(null,"Check your password. Your password and confirmpassword are not same.","Error",JOptionPane.INFORMATION_MESSAGE);
+                }
+
             }
         });
 
-        addBtn.addActionListener(new ActionListener() {
+        backBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
-                RegisterGUI rggu = new RegisterGUI(c);
+                LoginGUI lgu = new LoginGUI(c);
             }
         });
 
@@ -72,21 +75,25 @@ public class LoginGUI extends JFrame {
     }
 
     private void setInputPanel(){
-        JPanel jp = new JPanel(new GridLayout(4,1));
-        jp.setMaximumSize(new Dimension(300, 120));
-        jp.setMinimumSize(new Dimension(300, 120));
+        JPanel jp = new JPanel(new GridLayout(6,1));
+        jp.setMaximumSize(new Dimension(300, 180));
+        jp.setMinimumSize(new Dimension(300, 180));
 
 
         username = new JLabel("Enter your UserName");
         password = new JLabel("Enter your PassWord");
+        confirmpassword = new JLabel("Enter your Confirm Password");
 
         usernameInput = new JTextField();
         passwordInput = new JTextField();
+        confirmpasswordInput = new JTextField();
 
         jp.add(username);
         jp.add(usernameInput);
         jp.add(password);
         jp.add(passwordInput);
+        jp.add(confirmpassword);
+        jp.add(confirmpasswordInput);
 
         getContentPane().add(jp);
     }
@@ -97,24 +104,24 @@ public class LoginGUI extends JFrame {
         jp.setMinimumSize(new Dimension(500, 40));
 
 
-        loginBtn = new JButton("Log in");
-        loginBtn.setPreferredSize(new Dimension(300,30));
-        loginBtn.setForeground(Color.white);
-        loginBtn.setBackground(Color.black);
-        loginBtn.setOpaque(true); //Set transparency for button
-        loginBtn.setBorderPainted(false);
+        registerBtn = new JButton("Register");
+        registerBtn.setPreferredSize(new Dimension(300,30));
+        registerBtn.setForeground(Color.white);
+        registerBtn.setBackground(Color.black);
+        registerBtn.setOpaque(true); //Set transparency for button
+        registerBtn.setBorderPainted(false);
 
-        addBtn = new JButton("Register Now");
-        addBtn.setPreferredSize(new Dimension(300,30));
-        addBtn.setForeground(Color.white);
-        addBtn.setBackground(Color.blue);
-        addBtn.setOpaque(true); //Set transparency for button
-        addBtn.setBorderPainted(false);
+        backBtn = new JButton("Back");
+        backBtn.setPreferredSize(new Dimension(300,30));
+        backBtn.setForeground(Color.black);
+        backBtn.setBackground(Color.white);
+        backBtn.setOpaque(true); //Set transparency for button
+        backBtn.setBorderPainted(false);
 
 
+        jp.add(backBtn);
+        jp.add(registerBtn);
 
-        jp.add(loginBtn);
-        jp.add(addBtn);
 
         getContentPane().add(jp);
     }
@@ -122,7 +129,7 @@ public class LoginGUI extends JFrame {
     //It will go to Home page when you enter the correct username and password
 
     public JButton getLoginBtn() {
-        return loginBtn;
+        return registerBtn;
     }
 
     public String getUsername() {
@@ -133,6 +140,7 @@ public class LoginGUI extends JFrame {
         return passwordInput.getText();
     }
 
-
-
+    public String getConfirmpassword() {
+        return confirmpasswordInput.getText();
+    }
 }
